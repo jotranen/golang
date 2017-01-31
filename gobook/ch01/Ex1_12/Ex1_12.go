@@ -21,17 +21,17 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	u, err := url.Parse(r.URL.String())
-	cycles := 30.0
+	cycles := 30
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		m, _ := url.ParseQuery(u.RawQuery)
 		c, _ := strconv.Atoi(m["cycles"][0])
-		cycles = float64(c)
+		cycles = c
 
 		}
 
-	lissajous(w, float64(cycles))
+	lissajous(w, cycles)
 }
 
 var palette = []color.Color{color.Black, color.RGBA{0x00, 0xff, 0x00, 0xff}}
@@ -40,7 +40,7 @@ const (
 	WhiteIndex = 0
 	blackIndex = 1
 )
-func lissajous(out io.Writer, cycles float64) {
+func lissajous(out io.Writer, cycles int) {
 	const (
 		res = 0.001
 		size = 100
