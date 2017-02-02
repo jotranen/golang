@@ -11,3 +11,7 @@ func FToC(f Fahrenheit) Celcius {
 func CToK(c Celcius) Kelvin {
 	return Kelvin(c + 273.15)
 }
+
+func MToF(m Meter) Feet {
+	return Feet(m * FleetInMeters)
+}
