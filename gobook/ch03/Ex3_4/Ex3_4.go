@@ -32,6 +32,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func surface(out io.Writer) {
+	// TODO: sfmt.Fprintf would have been smarter...
 	out.Write([]byte(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' " +
 		"style='stroke: grey; fill: white; stroke-width: 0.7' " +
 		"width='%d' height='%d'>\n", width, height)))
