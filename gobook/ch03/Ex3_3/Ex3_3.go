@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+/*
+ * Exercise 3.3: Color each polygon based on its height, so that the peaks are colored red (# ff0000)
+ * and the valleys blue (# 0000ff).
+ */
+
 const (
 	width, height = 600, 320            // canvas size in pixels
 	cells         = 100                 // number of grid cells

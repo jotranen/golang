@@ -2,6 +2,11 @@ package main
 
 import "fmt"
 
+/*
+ * Exercise 3.12: Write a function that reports whether two strings are anagrams of each other, that is,
+ * they contain the same letters in a different order.
+ */
+
 func anagram(s1 string, s2 string) bool {
 
 	for i := 0; i < len(s1) && i < len(s2); i++ {

@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+/*
+ * Exercise 3.1: If the function f returns a non-finite float64 value, the SVG file will contain invalid < polygon > elements
+ * (although many SVG renderers handle this gracefully). Modify the program to skip invalid polygons.
+ */
+
 const (
 	width, height = 600, 320            // canvas size in pixels
 	cells         = 100                 // number of grid cells

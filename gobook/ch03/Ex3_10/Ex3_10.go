@@ -6,6 +6,10 @@ import (
 	"unicode/utf8"
 )
 
+/*
+ * Exercise 3.10: Write a non-recursive version of comma, using bytes.Buffer instead of string concatenation.
+ */
+
 func comma(s string) string {
 	n := len(s)
 	if n <= 3 {
