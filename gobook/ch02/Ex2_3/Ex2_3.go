@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+/*
+ * Exercise 2.3: Rewrite PopCount to use a loop instead of a single
+ */
+
 var pc[256]byte
 
 func init() {
