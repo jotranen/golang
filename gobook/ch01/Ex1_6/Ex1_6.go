@@ -10,6 +10,11 @@ import (
 	"math"
 )
 
+/*
+ * Exercise 1.6: Modify the Lissajous program to produce images in multiple colors by adding more values to palette
+ * and then displaying them by changing the third argument of SetColorIndex in some interesting way.
+ */
+
 var palette = []color.Color{color.Black,
 	color.RGBA{0x00, 0xff, 0x00, 0xff},
 	color.RGBA{0xff, 0x00, 0x00, 0xff},
