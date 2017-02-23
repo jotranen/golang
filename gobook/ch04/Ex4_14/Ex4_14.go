@@ -3,7 +3,6 @@
  * milestones, and users.
  */
 
-// TODO
 package main
 
 import (
@@ -26,11 +25,11 @@ type User struct {
 }
 
 type RepositoriesResult struct {
-	Repositories	[]*Repositories
+	Collection	[]Repositories
 }
 type Repositories struct {
-	id 	int
-	name 	string
+	Id 	int
+	Name 	string
 }
 
 func main() {
@@ -40,44 +39,67 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	res, _ := getUsers()
+	res, err := getUsers()
+	if err != nil {
+		log.Printf("Error: %v", err.Error())
+		html := "<html>"
+		html += "<head>"
+		html += "</head>"
+		html += "<body>"
+		html += "Error!"
+		html += "</body>"
+		html += "</html>"
 
-	html := "<html>"
-	html += "<head>"
-	html += "</head>"
-	html += "<body>"
-	html += "<h1>Users</h1>"
-	for i := range *res {
-		html += "<p>"
-		html += "Repositories for: "
-		html += "<a href=\"/repositories?u=" + (*res)[i].Login + "\">"
-		html += (*res)[i].Login + "</a>"
-		html += "</p>"
-	}
-	html += "</body>"
-	html += "</html>"
-	fmt.Fprintf(w, "%s\n", html)
-}
-
-func repositories(w http.ResponseWriter, r *http.Request) {
-	user := r.URL.Query()["u"]
-	if user != nil {
-		res, _ := getRepositories(user[0])
-		log.Printf("%v", res)
-
+		fmt.Fprintf(w, "%s\n", html)
+	} else {
 		html := "<html>"
 		html += "<head>"
 		html += "</head>"
 		html += "<body>"
 		html += "<h1>Users</h1>"
-		//for i := range *res {
-		//	html += "<p>"
-		//	html += "User: " + user[0] + " Repository: " + (*res)[i].name
-		//	html += "</p>"
-		//}
+		for i := range *res {
+			html += "<p>"
+			html += "Repositories for: "
+			html += "<a href=\"/repositories?u=" + (*res)[i].Login + "\">"
+			html += (*res)[i].Login + "</a>"
+			html += "</p>"
+		}
 		html += "</body>"
 		html += "</html>"
 		fmt.Fprintf(w, "%s\n", html)
+	}
+}
+
+func repositories(w http.ResponseWriter, r *http.Request) {
+	user := r.URL.Query()["u"]
+	if user != nil {
+		res, err := getRepositories(user[0])
+		if err != nil {
+			html := "<html>"
+			html += "<head>"
+			html += "</head>"
+			html += "<body>"
+			html += "No such user."
+			html += "</body>"
+			html += "</html>"
+			fmt.Fprintf(w, "%s\n", html)
+			log.Printf("%v", err)
+		} else {
+			html := "<html>"
+			html += "<head>"
+			html += "</head>"
+			html += "<body>"
+			html += "<h1>Users</h1>"
+			for i := range *res {
+				html += "<p>"
+				html += "User: " + user[0] + " Repository: " + (*res)[i].Name
+				html += "</p>"
+			}
+			html += "</body>"
+			html += "</html>"
+			fmt.Fprintf(w, "%s\n", html)
+		}
+
 	} else {
 		html := "<html>"
 		html += "<head>"
@@ -90,11 +112,9 @@ func repositories(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getRepositories(user string)(*RepositoriesResult, error) {
+func getRepositories(user string)(*[]Repositories, error) {
 	q := url.QueryEscape(user)
-	q = user
 	url := GITHUB_URL + "/users/" + q + "/repos"
-	log.Printf("%s", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -103,20 +123,14 @@ func getRepositories(user string)(*RepositoriesResult, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Error: %v", err)
 		return nil, fmt.Errorf("query failed: %s", resp.Status)
 	}
 
-	var repos RepositoriesResult
-
-	log.Printf("Body: %v", resp.Body)
+	repos := make([]Repositories, 0)
 
 	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
-		log.Printf("Error: %v", err)
 		return nil, err
 	}
-	log.Printf("Repos 0: %s", repos.Repositories[0].name)
-	log.Printf("Repos 0: %d", repos.Repositories[0].id)
 
 	return &repos, nil
 }
@@ -130,14 +144,12 @@ func getUsers() (*[]User, error){
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Error: %v", err)
 		return nil, fmt.Errorf("query failed: %s", resp.Status)
 	}
 
 	var users []User
 
 	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
-		log.Printf("Error: %v", err)
 		return nil, err
 	}
 
