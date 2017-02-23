@@ -8,16 +8,11 @@ package main
 
 import (
 	"net/http"
-	"sync"
 	"log"
 	"fmt"
 	"encoding/json"
+	"net/url"
 )
-
-
-
-var mu sync.Mutex
-var count int
 
 var GITHUB_URL string = "https://api.github.com"
 
@@ -30,64 +25,121 @@ type User struct {
 	Login	string
 }
 
-//
-//{
-//"login": "bmizerany",
-//"id": 46,
-//"avatar_url": "https://avatars.githubusercontent.com/u/46?v=3",
-//"gravatar_id": "",
-//"url": "https://api.github.com/users/bmizerany",
-//"html_url": "https://github.com/bmizerany",
-//"followers_url": "https://api.github.com/users/bmizerany/followers",
-//"following_url": "https://api.github.com/users/bmizerany/following{/other_user}",
-//"gists_url": "https://api.github.com/users/bmizerany/gists{/gist_id}",
-//"starred_url": "https://api.github.com/users/bmizerany/starred{/owner}{/repo}",
-//"subscriptions_url": "https://api.github.com/users/bmizerany/subscriptions",
-//"organizations_url": "https://api.github.com/users/bmizerany/orgs",
-//"repos_url": "https://api.github.com/users/bmizerany/repos",
-//"events_url": "https://api.github.com/users/bmizerany/events{/privacy}",
-//"received_events_url": "https://api.github.com/users/bmizerany/received_events",
-//"type": "User",
-//"site_admin": false
-//}
-//]
+type RepositoriesResult struct {
+	Repositories	[]*Repositories
+}
+type Repositories struct {
+	id 	int
+	name 	string
+}
 
 func main() {
 	http.HandleFunc("/", handler)
-	http.HandleFunc("/count", counter)
+	http.HandleFunc("/repositories", repositories)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	res, err := getUsers()
-	log.Printf("resp: %v", res)
-	log.Printf("err: %v", err)
-	fmt.Fprintf(w, "URL.Path = %v\n", res)
+	res, _ := getUsers()
+
+	html := "<html>"
+	html += "<head>"
+	html += "</head>"
+	html += "<body>"
+	html += "<h1>Users</h1>"
+	for i := range *res {
+		html += "<p>"
+		html += "Repositories for: "
+		html += "<a href=\"/repositories?u=" + (*res)[i].Login + "\">"
+		html += (*res)[i].Login + "</a>"
+		html += "</p>"
+	}
+	html += "</body>"
+	html += "</html>"
+	fmt.Fprintf(w, "%s\n", html)
 }
 
-func counter(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Count %d\n", count)
+func repositories(w http.ResponseWriter, r *http.Request) {
+	user := r.URL.Query()["u"]
+	if user != nil {
+		res, _ := getRepositories(user[0])
+		log.Printf("%v", res)
+
+		html := "<html>"
+		html += "<head>"
+		html += "</head>"
+		html += "<body>"
+		html += "<h1>Users</h1>"
+		//for i := range *res {
+		//	html += "<p>"
+		//	html += "User: " + user[0] + " Repository: " + (*res)[i].name
+		//	html += "</p>"
+		//}
+		html += "</body>"
+		html += "</html>"
+		fmt.Fprintf(w, "%s\n", html)
+	} else {
+		html := "<html>"
+		html += "<head>"
+		html += "</head>"
+		html += "<body>"
+		html += "No such user."
+		html += "</body>"
+		html += "</html>"
+		fmt.Fprintf(w, "%s\n", html)
+	}
+}
+
+func getRepositories(user string)(*RepositoriesResult, error) {
+	q := url.QueryEscape(user)
+	q = user
+	url := GITHUB_URL + "/users/" + q + "/repos"
+	log.Printf("%s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error: %v", err)
+		return nil, fmt.Errorf("query failed: %s", resp.Status)
+	}
+
+	var repos RepositoriesResult
+
+	log.Printf("Body: %v", resp.Body)
+
+	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil {
+		log.Printf("Error: %v", err)
+		return nil, err
+	}
+	log.Printf("Repos 0: %s", repos.Repositories[0].name)
+	log.Printf("Repos 0: %d", repos.Repositories[0].id)
+
+	return &repos, nil
 }
 
 func getUsers() (*[]User, error){
-	//q := url.QueryEscape("/users")
 	resp, err := http.Get(GITHUB_URL + "/users")
 	if err != nil {
 		return nil, err
 	}
+
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		log.Printf("Error: %v", err)
 		return nil, fmt.Errorf("query failed: %s", resp.Status)
 	}
 
 	var users []User
 
-	log.Printf("Body: %s", resp.Body)
-
 	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
-		resp.Body.Close()
+		log.Printf("Error: %v", err)
 		return nil, err
 	}
-	resp.Body.Close()
+
 	return &users, nil
 }
