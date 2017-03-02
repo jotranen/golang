@@ -1,10 +1,3 @@
-//TODO
-
-/*
- * Exercise 5.1: Change the findlinks program to traverse the n.FirstChild linked list using recursive
- * calls to visit instead of a loop.
- */
-
 package main
 
 import (
@@ -12,6 +5,11 @@ import (
 	"os"
 	"log"
 )
+
+/*
+ * Exercise 5.1: Change the findlinks program to traverse the n.FirstChild linked list using recursive
+ * calls to visit instead of a loop.
+ */
 
 func main() {
 	doc, err := html.Parse(os.Stdin)
@@ -21,26 +19,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	visit(nil, doc)
-	//for _, link := range visit(nil, doc) {
-	//	log.Printf("%v", link)
-	//}
+	visit(doc)
 }
 
-func visit(links []string, n *html.Node) /* []string */ {
+func visit(n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for _, a := range n.Attr {
 			if a.Key == "href" {
 				log.Printf(a.Val)
-				//links = append(links, a.Val)
 			}
 		}
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		//links = visit(links, c)
-		visit(nil, c)
+		visit(c)
 	}
-
-	//return links
 }
