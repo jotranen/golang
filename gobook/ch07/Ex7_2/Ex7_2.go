@@ -1,5 +1,3 @@
-// TODO
-
 package main
 
 import (
