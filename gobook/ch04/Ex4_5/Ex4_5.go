@@ -25,7 +25,6 @@ func elimAdjDuplicates(strings []string) ([] string) {
 			j++
 		}
 	}
-	fmt.Printf("j: %d\n", j)
 
 	return strings[:j]
 }
